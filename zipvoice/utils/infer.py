@@ -228,6 +228,27 @@ def cross_fade_concat(
 
     return final
 
+def fade_in_out(audio, sample_rate, fade_in_sec=1.0, fade_out_sec=1.0):
+    """
+    audio: Tensor shape (T), (1,T) hoặc (C,T)
+    """
+    if audio.dim() == 1:
+        audio = audio.unsqueeze(0)  # (1, T)
+
+    C, T = audio.shape
+    device = audio.device
+
+    fade_in_len = int(fade_in_sec * sample_rate)
+    fade_out_len = int(fade_out_sec * sample_rate)
+
+    fade_in = torch.linspace(0.0, 1.0, fade_in_len, device=device)
+    fade_out = torch.linspace(1.0, 0.0, fade_out_len, device=device)
+
+    audio[:, :fade_in_len] *= fade_in
+    audio[:, -fade_out_len:] *= fade_out
+
+    return audio
+
 
 def add_punctuation(text: str):
     """Add punctuation if there is not in the end of text"""
