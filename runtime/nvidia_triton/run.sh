@@ -34,7 +34,7 @@ fi
 
 if [ "$stage" -le 4 ] && [ "$stop_stage" -ge 4 ]; then
     echo "Starting triton server"
-    tritonserver --model-repository=$MODEL_REPO
+    # tritonserver --model-repository=$MODEL_REPO
 fi
 
 if [ "$stage" -le 5 ] && [ "$stop_stage" -ge 5 ]; then
@@ -69,8 +69,8 @@ if [ "$stage" -le 7 ] && [ "$stop_stage" -ge 7 ]; then
         --port 8000 \
         --max_batch_size 4 \
         --use_speaker_cache \
-        --prompt_audio workspace/zipvoice/prompt_voice.mp3 \
-        --prompt_text "希望你以后能够做得比我还好呦。"
+        --prompt_audio /workspace/zipvoice/prompt_voice.mp3 \
+        --prompt_text "bạn đã sẵn sàng cho lễ hội sôi động nhất thái lan? "
 fi
 
 if [ "$stage" -le 8 ] && [ "$stop_stage" -ge 8 ]; then
