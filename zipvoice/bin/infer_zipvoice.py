@@ -634,6 +634,7 @@ def generate_sentence(
 
     # Finish model generation
     t = (dt.datetime.now() - start_t).total_seconds()
+    print("time:", t)
 
     # Merge chunked wavs
     indexed_chunked_wavs = [

@@ -47,7 +47,7 @@ from torch import Tensor, nn
 
 from zipvoice.models.zipvoice import ZipVoice
 from zipvoice.models.zipvoice_distill import ZipVoiceDistill
-from zipvoice.tokenizer.tokenizer import SimpleTokenizer
+from zipvoice.tokenizer.tokenizer import EspeakTokenizer
 from zipvoice.utils.checkpoint import load_checkpoint
 from zipvoice.utils.common import AttributeDict
 from zipvoice.utils.scaling_converter import convert_scaled_to_non_scaled
@@ -317,7 +317,7 @@ def main():
 
     logging.info(f"Loading model from {params.model_dir}")
 
-    tokenizer = SimpleTokenizer(token_file)
+    tokenizer = EspeakTokenizer(token_file, lang = "vi")
     tokenizer_config = {"vocab_size": tokenizer.vocab_size, "pad_id": tokenizer.pad_id}
 
     with open(model_config, "r") as f:

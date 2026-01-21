@@ -6,13 +6,13 @@ echo "Start stage: $stage, Stop stage: $stop_stage"
 echo "Model name: $model_name"
 export CUDA_VISIBLE_DEVICES=0
 export PYTHONPATH=$PYTHONPATH:/workspace/ZipVoice
-
+export HF_TOKEN=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
 MODEL_DIR=models # huggingface model dir
 MODEL_REPO=./model_repo_${model_name}
 
 if [ "$stage" -le 1 ] && [ "$stop_stage" -ge 1 ]; then
     echo "Stage 1: Download huggingface models"
-    hf download k2-fsa/ZipVoice --local-dir $MODEL_DIR || exit 1
+    hf download hieuclc/zipvoice-vietnamese-1000h --local-dir $MODEL_DIR || exit 1
 fi
 
 if [ "$stage" -le 2 ] && [ "$stop_stage" -ge 2 ]; then

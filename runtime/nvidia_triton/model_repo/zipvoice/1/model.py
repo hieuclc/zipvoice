@@ -32,7 +32,7 @@ import triton_python_backend_utils as pb_utils
 from torch.utils.dlpack import from_dlpack, to_dlpack
 from zipvoice.models.zipvoice import ZipVoice
 from zipvoice.models.zipvoice_distill import ZipVoiceDistill
-from zipvoice.tokenizer.tokenizer import EmiliaTokenizer
+from zipvoice.tokenizer.tokenizer import EspeakTokenizer
 from zipvoice.utils.checkpoint import load_checkpoint
 from zipvoice.utils.feature import VocosFbank
 from zipvoice.utils.infer import rms_norm
@@ -52,7 +52,7 @@ class TritonPythonModel:
         self.model_name = parameters["model_name"]
 
         token_file = os.path.join(self.model_dir, "tokens.txt")
-        self.tokenizer = EmiliaTokenizer(token_file=token_file)
+        self.tokenizer = EspeakTokenizer(token_file=token_file, lang="vi")
 
         model_config_path = os.path.join(self.model_dir, "model.json")
         with open(model_config_path, "r") as f:

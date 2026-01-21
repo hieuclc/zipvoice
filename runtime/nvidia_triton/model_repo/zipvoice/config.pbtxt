@@ -21,7 +21,7 @@ dynamic_batching {
 parameters [
   {
     key: "tokenizer"
-    value: { string_value: "emilia"}
+    value: { string_value: "espeak"}
   },
   {
    key: "model_dir", 
