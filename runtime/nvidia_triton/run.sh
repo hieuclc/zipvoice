@@ -5,7 +5,7 @@ model_name=${3:-zipvoice_distill}
 echo "Start stage: $stage, Stop stage: $stop_stage"
 echo "Model name: $model_name"
 export CUDA_VISIBLE_DEVICES=0
-export PYTHONPATH=$PYTHONPATH:/workspace/ZipVoice
+export PYTHONPATH=$PYTHONPATH:/workspace/zipvoice
 MODEL_DIR=models # huggingface model dir
 MODEL_REPO=./model_repo_${model_name}
 
