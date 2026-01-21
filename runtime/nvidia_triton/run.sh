@@ -16,13 +16,13 @@ fi
 
 if [ "$stage" -le 2 ] && [ "$stop_stage" -ge 2 ]; then
     echo "Stage 2: Export Zipvoice TensorRT model"
-    python3 -m zipvoice.bin.tensorrt_export \
-        --model-name $model_name \
-        --model-dir $MODEL_DIR/$model_name \
-        --checkpoint-name model.pt \
-        --max-batch-size 16 \
-        --trt-engine-file-name fm_decoder.fp16.plan \
-        --tensorrt-model-dir $MODEL_DIR/${model_name}_trt || exit 1
+    # python3 -m zipvoice.bin.tensorrt_export \
+    #     --model-name $model_name \
+    #     --model-dir $MODEL_DIR/$model_name \
+    #     --checkpoint-name model.pt \
+    #     --max-batch-size 16 \
+    #     --trt-engine-file-name fm_decoder.fp16.plan \
+    #     --tensorrt-model-dir $MODEL_DIR/${model_name}_trt || exit 1
 fi
 
 if [ "$stage" -le 3 ] && [ "$stop_stage" -ge 3 ]; then
