@@ -240,8 +240,8 @@ def main():
     parser.add_argument("--model_dir", type=str, required=True, help="Path to the model directory.")
     parser.add_argument("--model_name", type=str, required=True, choices=["zipvoice", "zipvoice_distill"])
     parser.add_argument("--trt_engine_path", type=str, required=True, help="Path to the TensorRT engine.")
-    parser.add_argument("--reference_audio_sample_rate", type=int, default=16000)
-    parser.add_argument("--port", type=int, default=8000)
+    parser.add_argument("--reference_audio_sample_rate", type=int, default=24000)
+    parser.add_argument("--port", type=int, default=801)
     parser.add_argument("--max_batch_size", type=int, default=4)
     parser.add_argument("--verbose", action="store_true", default=False)
     parser.add_argument(

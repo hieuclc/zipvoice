@@ -18,3 +18,28 @@ services:
               capabilities: [gpu]
     command: >
       /bin/bash -c "export HF_TOKEN=xxx && git clone https://github.com/hieuclc/zipvoice -b test && cd zipvoice/runtime/nvidia_triton && bash run.sh 1 7 zipvoice"
+
+# services:
+#   tts:
+#     image: soar97/triton-zipvoice:24.12
+#     shm_size: '1gb'
+#     ports:
+#       - "8000:8000"
+#       - "8001:8001"
+#       - "8002:8002"
+#     environment:
+#       - PYTHONIOENCODING=utf-8
+#       - MODEL=zipvoice
+#       - HF_TOKEN=xxxx
+#     volumes:
+#       - /teamspace/studios/this_studio/zipvoice:/workspace/zipvoice   # 👈 mount source
+#     deploy:
+#       resources:
+#         reservations:
+#           devices:
+#             - driver: nvidia
+#               device_ids: ['0']
+#               capabilities: [gpu]
+#     working_dir: /workspace/zipvoice/runtime/nvidia_triton
+#     command: >
+#       bash run.sh 7 8 zipvoice

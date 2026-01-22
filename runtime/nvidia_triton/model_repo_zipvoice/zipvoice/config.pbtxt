@@ -29,15 +29,15 @@ parameters [
   },
   {
    key: "model_dir", 
-   value: {string_value:"${model_dir}"}
+   value: {string_value:"models/zipvoice"}
   },
   {
    key: "model_name", 
-   value: {string_value:"${model_name}"}
+   value: {string_value:"zipvoice"}
   },
   {
    key: "trt_engine_path",
-   value: {string_value:"${trt_engine_path}"}
+   value: {string_value:"models/zipvoice_trt/fm_decoder.fp16.plan"}
   },
   {
    key: "reference_audio_sample_rate", 

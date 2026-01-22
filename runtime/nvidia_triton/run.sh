@@ -11,7 +11,7 @@ MODEL_REPO=./model_repo_${model_name}
 
 if [ "$stage" -le 1 ] && [ "$stop_stage" -ge 1 ]; then
     echo "Stage 1: Download huggingface models"
-    hf download hieuclc/zipvoice-vietnamese-1000h --local-dir $MODEL_DIR || exit 1
+    # hf download hieuclc/zipvoice-vietnamese-1000h --local-dir $MODEL_DIR || exit 1
 fi
 
 if [ "$stage" -le 2 ] && [ "$stop_stage" -ge 2 ]; then
@@ -27,9 +27,9 @@ fi
 
 if [ "$stage" -le 3 ] && [ "$stop_stage" -ge 3 ]; then
     echo "Building triton server"
-    rm -r $MODEL_REPO
-    cp -r ./model_repo $MODEL_REPO
-    python3 scripts/fill_template.py -i $MODEL_REPO/zipvoice/config.pbtxt model_dir:$MODEL_DIR/$model_name,model_name:$model_name,trt_engine_path:$MODEL_DIR/${model_name}_trt/fm_decoder.fp16.plan
+    # rm -r $MODEL_REPO
+    # cp -r ./model_repo $MODEL_REPO
+    # python3 scripts/fill_template.py -i $MODEL_REPO/zipvoice/config.pbtxt model_dir:$MODEL_DIR/$model_name,model_name:$model_name,trt_engine_path:$MODEL_DIR/${model_name}_trt/fm_decoder.fp16.plan
 fi
 
 if [ "$stage" -le 4 ] && [ "$stop_stage" -ge 4 ]; then
@@ -46,7 +46,7 @@ if [ "$stage" -le 5 ] && [ "$stop_stage" -ge 5 ]; then
     #     python3 client_grpc.py  \
     #             --num-tasks $num_task --huggingface-dataset yuekai/seed_tts_cosy2 \
     #             --split-name $split_name --log-dir $log_dir
-    done
+    # done
 fi
 
 if [ "$stage" -le 6 ] && [ "$stop_stage" -ge 6 ]; then
@@ -66,7 +66,7 @@ if [ "$stage" -le 7 ] && [ "$stop_stage" -ge 7 ]; then
         --model_name $model_name \
         --trt_engine_path $MODEL_DIR/${model_name}_trt/fm_decoder.fp16.plan \
         --reference_audio_sample_rate 24000 \
-        --port 8000 \
+        --port 8001 \
         --max_batch_size 4 \
         --use_speaker_cache \
         --prompt_audio /workspace/zipvoice/prompt_voice.mp3 \
