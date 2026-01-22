@@ -32,11 +32,31 @@ from zipvoice.utils.infer import (
     rms_norm,
 )
 
+import dotenv
+
+dotenv.load_dotenv(override = "True")
+
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-HUGGINGFACE_REPO = "hynt/ZipVoice-Vietnamese-2500h"
+HUGGINGFACE_REPO = "hieuclc/zipVoice-vietnamese-1000h"
+
+import torchaudio.functional as F
+
+def resample_24000_to_16000(wav: torch.Tensor) -> torch.Tensor:
+    """
+    wav: Tensor shape (T,) hoặc (1, T)
+    return: Tensor shape (1, T_new)
+    """
+    wav = wav.squeeze()  # (T,)
+    wav = F.resample(
+        wav,
+        orig_freq=24000,
+        new_freq=16000
+    )
+    return wav.unsqueeze(0)  # (1, T_new)
+
 
 # Request/Response models
 class TTSRequest(BaseModel):
@@ -77,7 +97,7 @@ class TTSEngine:
     def __init__(
         self,
         model_name: str = "zipvoice",
-        checkpoint_name: str = "iter-525000-avg-2.pt",
+        checkpoint_name: str = "iter-10000-avg-2.pt",
         model_config_file: str = "config.json",
         model_token_file: str = "tokens.txt",
         lang: str = "vi",
@@ -430,6 +450,8 @@ class TTSEngine:
         final_wav = remove_silence(
             final_wav, self.sampling_rate, only_edge=(not remove_long_sil), trail_sil=0.2
         )
+        # 🔽 RESAMPLE 24k → 16k
+        # final_wav = resample_24000_to_16000(final_wav)
 
         # final_wav = fade_in_out(final_wav, sample_rate = 24000, fade_in_sec=0.2, fade_out_sec=0.2)
         
@@ -485,7 +507,7 @@ async def startup_event():
     # Initialize TTS engine with voice caching
     tts_engine = TTSEngine(
         model_name="zipvoice",
-        checkpoint_name="iter-525000-avg-2.pt",
+        checkpoint_name="iter-10000-avg-2.pt",
         model_config_file="config.json",
         model_token_file="tokens.txt",
         lang="vi",

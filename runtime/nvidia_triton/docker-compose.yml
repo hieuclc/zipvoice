@@ -17,4 +17,4 @@ services:
               device_ids: ['0']
               capabilities: [gpu]
     command: >
-      /bin/bash -c "export HF_TOKEN=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 && git clone https://github.com/hieuclc/zipvoice -b test && cd zipvoice/runtime/nvidia_triton && bash run.sh 1 4 zipvoice"
+      /bin/bash -c "export HF_TOKEN=xxx && git clone https://github.com/hieuclc/zipvoice -b test && cd zipvoice/runtime/nvidia_triton && bash run.sh 1 7 zipvoice"
