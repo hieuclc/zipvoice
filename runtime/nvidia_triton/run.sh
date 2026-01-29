@@ -11,7 +11,7 @@ MODEL_REPO=./model_repo_${model_name}
 
 if [ "$stage" -le 1 ] && [ "$stop_stage" -ge 1 ]; then
     echo "Stage 1: Download huggingface models"
-    # hf download hieuclc/zipvoice-vietnamese-1000h --local-dir $MODEL_DIR || exit 1
+    hf download hieuclc/zipvoice-vietnamese-1000h --local-dir $MODEL_DIR || exit 1
 fi
 
 if [ "$stage" -le 2 ] && [ "$stop_stage" -ge 2 ]; then
