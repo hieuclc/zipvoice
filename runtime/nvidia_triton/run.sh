@@ -16,20 +16,20 @@ fi
 
 if [ "$stage" -le 2 ] && [ "$stop_stage" -ge 2 ]; then
     echo "Stage 2: Export Zipvoice TensorRT model"
-    # python3 -m zipvoice.bin.tensorrt_export \
-    #     --model-name $model_name \
-    #     --model-dir $MODEL_DIR/$model_name \
-    #     --checkpoint-name model.pt \
-    #     --max-batch-size 16 \
-    #     --trt-engine-file-name fm_decoder.fp16.plan \
-    #     --tensorrt-model-dir $MODEL_DIR/${model_name}_trt || exit 1
+    python3 -m zipvoice.bin.tensorrt_export \
+        --model-name $model_name \
+        --model-dir $MODEL_DIR/$model_name \
+        --checkpoint-name model.pt \
+        --max-batch-size 16 \
+        --trt-engine-file-name fm_decoder.fp16.plan \
+        --tensorrt-model-dir $MODEL_DIR/${model_name}_trt || exit 1
 fi
 
 if [ "$stage" -le 3 ] && [ "$stop_stage" -ge 3 ]; then
     echo "Building triton server"
-    # rm -r $MODEL_REPO
-    # cp -r ./model_repo $MODEL_REPO
-    # python3 scripts/fill_template.py -i $MODEL_REPO/zipvoice/config.pbtxt model_dir:$MODEL_DIR/$model_name,model_name:$model_name,trt_engine_path:$MODEL_DIR/${model_name}_trt/fm_decoder.fp16.plan
+    rm -r $MODEL_REPO
+    cp -r ./model_repo $MODEL_REPO
+    python3 scripts/fill_template.py -i $MODEL_REPO/zipvoice/config.pbtxt model_dir:$MODEL_DIR/$model_name,model_name:$model_name,trt_engine_path:$MODEL_DIR/${model_name}_trt/fm_decoder.fp16.plan
 fi
 
 if [ "$stage" -le 4 ] && [ "$stop_stage" -ge 4 ]; then
