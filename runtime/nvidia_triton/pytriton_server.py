@@ -71,9 +71,7 @@ class ZipVoiceModel:
         if self.reference_sample_rate != self.sampling_rate:
             self.resampler = torchaudio.transforms.Resample(
                 self.reference_sample_rate, self.sampling_rate
-            )  # .to(
-            # self.device
-            # )
+            ).to(self.device)
         else:
             self.resampler = None
 
@@ -119,7 +117,7 @@ class ZipVoiceModel:
 
         if reference_wav is not None:
             for i in range(batch_size):
-                prompt_wav = torch.from_numpy(reference_wav[i])  # .to(self.device)
+                prompt_wav = torch.from_numpy(reference_wav[i]).to(self.device)
                 wav_len = reference_wav_len[i][0]
                 prompt_wav = prompt_wav[:wav_len].unsqueeze(0)
 
