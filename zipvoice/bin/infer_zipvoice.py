@@ -58,26 +58,7 @@ python3 -m zipvoice.bin.infer_zipvoice \
     --text "I am a sentence." \
     --res-wav-path result.wav \
     --trt-engine-path models/zipvoice_distill_onnx_trt/fm_decoder.fp16.plan
-
-(4) Inference of a single sentence using the Vietnamese model:
-
-python3 -m zipvoice.bin.infer_zipvoice \
-    --model-name zipvoice \
-    --checkpoint-name iter-525000-avg-2.pt \
-    --prompt-wav ../thailen.wav \
-    --prompt-text "bạn đã sẵn sàng cho lễ hội sôi động nhất thái lan?" \
-    --text "Đây là một câu nói được tổng hợp bằng ZipVoice tiếng Việt." \
-    --model-config-file "config.json" \
-    --model-token-file "tokens.txt" \
-    --res-wav-path ../result_vi.wav \
-    --lang vi \
-    --tokenizer espeak
-
-
-`--model-name` can be `zipvoice` or `zipvoice_distill`,
-which are the models before and after distillation, respectively.
 """
-
 
 import argparse
 import datetime as dt
@@ -117,7 +98,7 @@ from zipvoice.utils.infer import (
 )
 from zipvoice.utils.tensorrt import load_trt
 
-HUGGINGFACE_REPO = "hynt/ZipVoice-Vietnamese-2500h"
+HUGGINGFACE_REPO = "k2-fsa/ZipVoice"
 MODEL_DIR = {
     "zipvoice": "zipvoice",
     "zipvoice_distill": "zipvoice_distill",
@@ -313,18 +294,6 @@ def get_parser():
         type=str,
         default=None,
         help="The path to the TensorRT engine file.",
-    )
-    parser.add_argument(
-        "--model-config-file",
-        type=str,
-        default=None,
-        help="The name of json config file.",
-    )
-    parser.add_argument(
-        "--model-token-file",
-        type=str,
-        default=None,
-        help="The name of token file",
     )
     return parser
 
@@ -634,7 +603,6 @@ def generate_sentence(
 
     # Finish model generation
     t = (dt.datetime.now() - start_t).total_seconds()
-    print("time:", t)
 
     # Merge chunked wavs
     indexed_chunked_wavs = [
@@ -794,8 +762,8 @@ def main():
             if not (params.model_dir / filename).is_file():
                 raise FileNotFoundError(f"{params.model_dir / filename} does not exist")
         model_ckpt = params.model_dir / params.checkpoint_name
-        model_config = params.model_dir / params.model_config_file
-        token_file = params.model_dir / params.model_token_file
+        model_config = params.model_dir / "model.json"
+        token_file = params.model_dir / "tokens.txt"
         logging.info(
             f"Using {params.model_name} in local model dir {params.model_dir}, "
             f"checkpoint {params.checkpoint_name}"
@@ -803,14 +771,14 @@ def main():
     else:
         logging.info(f"Using pretrained {params.model_name} model from the Huggingface")
         model_ckpt = hf_hub_download(
-            HUGGINGFACE_REPO, filename=f"{params.checkpoint_name}"
+            HUGGINGFACE_REPO, filename=f"{MODEL_DIR[params.model_name]}/model.pt"
         )
         model_config = hf_hub_download(
-            HUGGINGFACE_REPO, filename=f"{params.model_config_file}"
+            HUGGINGFACE_REPO, filename=f"{MODEL_DIR[params.model_name]}/model.json"
         )
 
         token_file = hf_hub_download(
-            HUGGINGFACE_REPO, filename=f"{params.model_token_file}"
+            HUGGINGFACE_REPO, filename=f"{MODEL_DIR[params.model_name]}/tokens.txt"
         )
 
     if params.tokenizer == "emilia":
