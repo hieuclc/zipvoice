@@ -369,6 +369,17 @@ def get_parser():
         "which is a text file with '{token}\t{token_id}' per line.",
     )
 
+    parser.add_argument(
+        "--accum-steps",
+        type=int,
+        default=1,
+        help="""Gradient accumulation steps. Use to reduce VRAM usage.
+        Effective batch size = max_duration * accum_steps.
+        If accum_steps=4, set max_duration to 1/4 of original value
+        to keep the same effective batch size.
+        """,
+    )
+
     return parser
 
 
@@ -528,6 +539,8 @@ def train_one_epoch(
         be set to 0.
     """
     model.train()
+    optimizer.zero_grad()
+    params.optim_step = getattr(params, "optim_step", 0)
     device = model.device if isinstance(model, DDP) else next(model.parameters()).device
 
     # used to track the stats over iterations in one epoch
@@ -585,7 +598,7 @@ def train_one_epoch(
                 )
 
         params.batch_idx_train += 1
-
+        is_update_step = (params.batch_idx_train % params.accum_steps == 0)
         batch_size = len(batch["text"])
 
         tokens, features, features_lens = prepare_input(
@@ -609,20 +622,31 @@ def train_one_epoch(
 
             tot_loss = (tot_loss * (1 - 1 / params.reset_interval)) + loss_info
 
-            scaler.scale(loss).backward()
+            # ---- GRADIENT ACCUMULATION ----
+            loss = loss / params.accum_steps
 
-            scheduler.step_batch(params.batch_idx_train)
-            # Use the number of hours of speech to adjust the learning rate
-            if params.lr_hours > 0:
-                scheduler.step_epoch(
-                    params.batch_idx_train
-                    * params.max_duration
-                    * params.world_size
-                    / 3600
-                )
-            scaler.step(optimizer)
-            scaler.update()
-            optimizer.zero_grad()
+            # DDP: chỉ sync gradient ở bước cuối accumulation
+            if not is_update_step and world_size > 1:
+                with model.no_sync():
+                    scaler.scale(loss).backward()
+            else:
+                scaler.scale(loss).backward()
+
+            if is_update_step:
+                params.optim_step += 1
+                scheduler.step_batch(params.optim_step)
+                if params.lr_hours > 0:
+                    scheduler.step_epoch(
+                        params.optim_step
+                        * params.max_duration
+                        * params.world_size
+                        / 3600
+                    )
+                scaler.step(optimizer)
+                scaler.update()
+                optimizer.zero_grad()
+            # ---- END GRADIENT ACCUMULATION ----
+
         except Exception as e:
             logging.info(f"Caught exception : {e}.")
             save_bad_model()
@@ -665,12 +689,8 @@ def train_one_epoch(
             )
         if params.num_iters > 0 and params.batch_idx_train > params.num_iters:
             break
-        if params.batch_idx_train % 100 == 0 and params.use_fp16:
-            # If the grad scale was less than 1, try increasing it. The _growth_interval
-            # of the grad scaler is configurable, but we can't configure it to have
-            # different behavior depending on the current grad scale.
+        if is_update_step and params.use_fp16:
             cur_grad_scale = scaler._scale.item()
-
             if cur_grad_scale < 1024.0 or (
                 cur_grad_scale < 4096.0 and params.batch_idx_train % 400 == 0
             ):
@@ -686,13 +706,14 @@ def train_one_epoch(
                     f"grad_scale is too small, exiting: {cur_grad_scale}"
                 )
 
-        if params.batch_idx_train % params.log_interval == 0:
+        if is_update_step and params.optim_step % params.log_interval == 0:
             cur_lr = max(scheduler.get_last_lr())
             cur_grad_scale = scaler._scale.item() if params.use_fp16 else 1.0
 
             logging.info(
                 f"Epoch {params.cur_epoch}, batch {batch_idx}, "
                 f"global_batch_idx: {params.batch_idx_train}, "
+                f"optim_step: {params.optim_step}, "    # ← thêm dòng này
                 f"batch size: {batch_size}, "
                 f"loss[{loss_info}], tot_loss[{tot_loss}], "
                 f"cur_lr: {cur_lr:.2e}, "
@@ -701,17 +722,19 @@ def train_one_epoch(
 
             if tb_writer is not None:
                 tb_writer.add_scalar(
-                    "train/learning_rate", cur_lr, params.batch_idx_train
+                    "train/learning_rate", cur_lr, params.optim_step    # ← dùng optim_step
                 )
                 loss_info.write_summary(
-                    tb_writer, "train/current_", params.batch_idx_train
+                    tb_writer, "train/current_", params.optim_step      # ← dùng optim_step
                 )
-                tot_loss.write_summary(tb_writer, "train/tot_", params.batch_idx_train)
+                tot_loss.write_summary(
+                    tb_writer, "train/tot_", params.optim_step          # ← dùng optim_step
+                )
                 if params.use_fp16:
                     tb_writer.add_scalar(
                         "train/grad_scale",
                         cur_grad_scale,
-                        params.batch_idx_train,
+                        params.optim_step                               # ← dùng optim_step
                     )
 
     loss_value = tot_loss["loss"]
